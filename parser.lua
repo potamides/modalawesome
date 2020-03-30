@@ -20,16 +20,14 @@ end
 
 local function parse(sequence, commands)
   local should_break = true
-  for _, command in ipairs(commands) do
-    for _, pattern in ipairs(command.pattern) do
-      local captures, valid, finished = match(sequence, gears.table.clone(pattern))
+  for _, command in pairs(commands) do
+    local captures, valid, finished = match(sequence, gears.table.clone(command.pattern))
 
-      if finished then
-        command:handler(table.unpack(captures))
-        return true
-      elseif valid then
-        should_break = false
-      end
+    if finished then
+      command:handler(table.unpack(captures))
+      return true
+    elseif valid then
+      should_break = false
     end
   end
 

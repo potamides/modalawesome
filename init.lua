@@ -1,16 +1,16 @@
 local awful   = require("awful")
 local textbox = require("wibox.widget.textbox")
 local parser  = require("vimawesome.parser")
+--local naughty = require("naughty")
 
 local grabber
+local modes
 local sequence_box = textbox()
 local mode_box     = textbox()
-local modes = {
-  launcher = require("vimawesome.launcher"),
-  tag      = require("vimawesome.tag")
-}
 
 local function grabkey(_, _, key)
+  --naughty.notify({ preset = naughty.config.presets.critical,
+  --         text = key })
   local sequence = sequence_box.text .. key
   if parser.parse(sequence, modes[mode_box.text]) then
     sequence_box.text = ''
@@ -21,21 +21,26 @@ end
 
 local function startmode(modename, stop_grabber)
   sequence_box.text = ''
-  mode_box.text = modename
+  mode_box.text     = modename
 
   if stop_grabber then
     grabber:stop()
   end
 end
 
-local function init(modkey, default_mode)
-  default_mode = default_mode or "tag"
+local function init(args)
+  args              = args or {}
+  args.modkey       = args.modkey or "Super_L"
+  args.modes        = args.modes or require("vimawesome.modes")
+  args.default_mode = args.default_mode or "tag"
 
+  modes = args.modes
   grabber = awful.keygrabber {
     keybindings = {
-      {{}, modkey, function() startmode(default_mode) end
-    }},
+      {{}, args.modkey, function() startmode(args.default_mode) end },
+    },
     export_keybindings = true,
+    mask_modkeys = true,
     keypressed_callback  = grabkey
   }
 
@@ -46,10 +51,7 @@ local function init(modkey, default_mode)
   end
 
   grabber:start()
-  startmode(default_mode)
+  startmode(args.default_mode)
 end
-
-
-init('Alt_R')
 
 return {init = init, sequence = sequence_box, active_mode= mode_box, modes = modes}
