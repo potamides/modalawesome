@@ -20,7 +20,7 @@ end
 
 local function parse(sequence, commands)
   local should_break = true
-  for _, command in pairs(commands) do
+  for _, command in ipairs(commands) do
     local captures, valid, finished = match(sequence, gears.table.clone(command.pattern))
 
     if finished then
