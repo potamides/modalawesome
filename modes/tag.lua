@@ -84,7 +84,7 @@ local tag_commands = {
   },
   {
     description = "move focused client to tag",
-    pattern = {'s', '%d*', '[gfb]'},
+    pattern = {'m', '%d*', '[gfb]'},
     handler = taghelper(function(arg) client.focus:move_to_tag(arg) end)
   },
   {
@@ -114,7 +114,7 @@ local tag_commands = {
   },
   {
     description = "toggle floating",
-    pattern = {'v'},
+    pattern = {'V'},
     handler = function()
       local c = client.focus
       if c then
@@ -124,7 +124,7 @@ local tag_commands = {
   },
   {
     description = "toggle keep on top",
-    pattern = {'o'},
+    pattern = {'O'},
     handler = function()
       local c = client.focus
       if c then
@@ -134,7 +134,7 @@ local tag_commands = {
   },
   {
     description = "toggle sticky",
-    pattern = {'z'},
+    pattern = {'S'},
     handler = function()
       local c = client.focus
       if c then
@@ -144,7 +144,7 @@ local tag_commands = {
   },
   {
     description = "toggle fullscreen",
-    pattern = {'a'},
+    pattern = {'F'},
     handler = function()
       local c = client.focus
       if c then
@@ -155,7 +155,7 @@ local tag_commands = {
   },
   {
     description = "toggle maximized",
-    pattern = {'m'},
+    pattern = {'M'},
     handler = function()
       local c = client.focus
       if c then

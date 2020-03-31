@@ -15,7 +15,7 @@ local launcher_commands = {
   },
   {
     description = "quit awesome",
-    pattern = {'q'},
+    pattern = {'Q'},
     handler = function() awesome.quit() end
   },
   {
