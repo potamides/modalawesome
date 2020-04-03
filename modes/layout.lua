@@ -25,11 +25,11 @@ local layout_commands = {
   },
   {
     description = "change number of master clients",
-    pattern = {'%d*', '[id]'},
+    pattern = {'%d*', '[sd]'},
     handler = function(_, count, movement)
       count = count == '' and 1 or tonumber(count)
 
-      if movement == 'i' then
+      if movement == 's' then
         awful.tag.incnmaster(count, nil, true)
       else
         awful.tag.incnmaster(-count, nil, true)
@@ -63,6 +63,11 @@ local layout_commands = {
         awful.layout.inc(-count)
       end
     end
+  },
+  {
+    description = "enter client mode",
+    pattern = {'i'},
+    handler = function(self) self.startmode("client", true) end
   },
 }
 

@@ -45,6 +45,11 @@ local launcher_commands = {
     pattern = {'m'},
     handler = function() menubar.show() end
   },
+  {
+    description = "enter client mode",
+    pattern = {'i'},
+    handler = function(self) self.startmode("client", true) end
+  },
 }
 
 return launcher_commands
