@@ -55,7 +55,7 @@ end
 
 local function init(args)
   args              = args or {}
-  args.modkeys      = args.modkeys or {"Super_L"}
+  args.modkeys      = args.modkeys or {"Super_L", "Super_R"}
   args.modes        = args.modes or require("vimawesome.modes")
   args.default_mode = args.default_mode or "tag"
   args.keybindings  = args.keybindings or {}
