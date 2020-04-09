@@ -83,34 +83,59 @@ local tag_commands = {
     handler = function() awful.client.urgent.jumpto() end
   },
   {
-    description = "move focused client to tag",
-    pattern = {'m', '%d*', '[gfb]'},
-    handler = taghelper(function(arg) client.focus:move_to_tag(arg) end)
-  },
-  {
     description = "toggle tag",
     pattern = {'t', '%d*', '[gfb]'},
     handler = taghelper(awful.tag.viewtoggle)
   },
   {
+    description = "move focused client to tag",
+    pattern = {'m', '%d*', '[gfb]'},
+    handler = taghelper(function(arg)
+      local c = client.focus
+      if c then
+        c:move_to_tag(arg)
+      end
+    end)
+  },
+  {
     description = "toggle focused client on tag",
     pattern = {'d', '%d*', '[gfb]'},
-    handler = taghelper(function(arg) client.focus:toggle_tag(arg) end)
+    handler = taghelper(function(arg)
+      local c = client.focus
+      if c then
+        c:toggle_tag(arg)
+      end
+    end)
   },
   {
     description = "move to master",
     pattern = {'y'},
-    handler = function() client.focus:swap(awful.client.getmaster()) end
+    handler = function()
+      local c = client.focus
+      if c then
+        c:swap(awful.client.getmaster())
+      end
+    end
   },
   {
     description = "move to screen",
     pattern = {'p'},
-    handler = function() client.focus:move_to_screen() end
+    handler = function()
+      local c = client.focus
+      if c then
+        c:move_to_screen()
+      end
+    end
   },
   {
     description = "close client",
     pattern = {'c'},
-    handler = function() client.focus:kill() end
+    handler = function()
+      local c = client.focus
+      if c then
+        c:kill()
+      end
+    end
   },
   {
     description = "toggle floating",
