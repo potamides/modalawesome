@@ -1,6 +1,6 @@
 local awful         = require("awful")
 local textbox       = require("wibox.widget.textbox")
-local parser        = require("vimawesome.parser")
+local parser        = require("modalawesome.parser")
 local hotkeys_popup = require("awful.hotkeys_popup.widget")
 --local naughty = require("naughty")
 
@@ -56,7 +56,7 @@ end
 local function init(args)
   args              = args or {}
   args.modkeys      = args.modkeys or {"Super_L", "Super_R"}
-  args.modes        = args.modes or require("vimawesome.modes")
+  args.modes        = args.modes or require("modalawesome.modes")
   args.default_mode = args.default_mode or "tag"
   args.keybindings  = args.keybindings or {}
 

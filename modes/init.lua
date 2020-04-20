@@ -1,7 +1,7 @@
 local modes = {
-  tag      = require("vimawesome.modes.tag"),
-  layout   = require("vimawesome.modes.layout"),
-  launcher = require("vimawesome.modes.launcher"),
+  tag      = require("modalawesome.modes.tag"),
+  layout   = require("modalawesome.modes.layout"),
+  launcher = require("modalawesome.modes.launcher"),
 }
 
 return modes
