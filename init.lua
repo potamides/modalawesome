@@ -1,8 +1,8 @@
 local awful         = require("awful")
+local gears         = require("gears")
 local textbox       = require("wibox.widget.textbox")
 local parser        = require("modalawesome.parser")
 local hotkeys_popup = require("awful.hotkeys_popup.widget")
---local naughty = require("naughty")
 
 local grabber
 local modes
@@ -34,8 +34,6 @@ local function create_hotkeys(keybindings, modes_table)
 end
 
 local function grabkey(_, _, key)
-  --naughty.notify({ preset = naughty.config.presets.critical,
-  --         text = key })
   local sequence = sequence_box.text .. key
   if parser.parse(sequence, modes[mode_box.text]) then
     sequence_box:set_text('')
@@ -53,21 +51,29 @@ local function startmode(modename, stop_grabber)
   end
 end
 
+local function create_default_mode_keybindings(modkey, default_mode)
+  local keysyms     = awesome._modifiers[modkey] or {{keysym = modkey}}
+  local keybindings = {}
+
+  for _, keysym in pairs(keysyms) do
+    table.insert(keybindings,
+      {
+        {}, keysym.keysym, function() startmode(default_mode) end,
+        {description = "start " .. default_mode .. " mode", group = "global"}
+      })
+  end
+
+  return keybindings
+end
+
 local function init(args)
   args              = args or {}
-  args.modkeys      = args.modkeys or {"Super_L", "Super_R"}
+  args.modkey      = args.modkey or "Mod4"
   args.modes        = args.modes or require("modalawesome.modes")
   args.default_mode = args.default_mode or "tag"
   args.keybindings  = args.keybindings or {}
 
-  for _, modkey in pairs(args.modkeys) do
-    table.insert(args.keybindings,
-      {
-        {}, modkey, function() startmode(args.default_mode) end,
-        {description = "start " .. args.default_mode .. " mode", group = "global"}
-      })
-  end
-
+  gears.table.merge(args.keybindings, create_default_mode_keybindings(args.modkey, args.default_mode))
   modes   = args.modes
   grabber = awful.keygrabber {
     keybindings         = args.keybindings,
@@ -88,4 +94,4 @@ local function init(args)
   startmode(args.default_mode)
 end
 
-return {init = init, sequence = sequence_box, active_mode = mode_box, modes = modes}
+return {init = init, sequence = sequence_box, active_mode = mode_box}
