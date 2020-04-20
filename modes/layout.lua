@@ -1,4 +1,4 @@
-local awful = require("awful")
+local awful     = require("awful")
 
 local layout_commands = {
   {
@@ -61,6 +61,19 @@ local layout_commands = {
         awful.layout.inc(count)
       else
         awful.layout.inc(-count)
+      end
+    end
+  },
+  {
+    description = "change useless gap",
+    pattern = {'%d*', '[+-]'},
+    handler = function(_, count, movement)
+      count = count == '' and 1 or tonumber(count)
+
+      if  movement == '+' then
+        awful.tag.incgap(count)
+      else
+        awful.tag.incgap(-count)
       end
     end
   },
