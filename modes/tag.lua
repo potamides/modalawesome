@@ -69,11 +69,35 @@ local tag_commands = {
     pattern = {'%d*', '[HJKL]'},
     handler = function(_, count, movement)
       local directions = {H = 'left', J = 'down', K = 'up', L = 'right'}
+      local sel        = client.focus
+      local scr        = awful.screen.focused()
       count = count == '' and 1 or tonumber(count)
 
-      -- TODO: Find out why movements > 1 behave strangely
-      for _ = 1, count do
-        awful.client.swap.global_bydirection(directions[movement])
+      -- this is a bit hacky, but awful.client.swap.global_bydirection doesn't work as expected
+      if sel then
+          -- move focus
+          for _ = 1, count do
+            awful.client.focus.global_bydirection(directions[movement])
+            local c = client.focus
+
+            -- swapping inside a screen
+            if sel.screen == c.screen and sel ~= c then
+                c:swap(sel)
+
+            -- swapping to an empty screen
+            elseif sel == c then
+                sel:move_to_screen(awful.screen.focused())
+
+            -- swapping to a nonempty screen
+            elseif sel.screen ~= c.screen and sel ~= c then
+                sel:move_to_screen(c.screen)
+                c:move_to_screen(scr)
+            end
+
+          end
+          awful.screen.focus(sel.screen)
+          sel:emit_signal("request::activate", "client.swap.global_bydirection",
+                          {raise=false})
       end
     end
   },
@@ -118,12 +142,18 @@ local tag_commands = {
     end
   },
   {
-    description = "move to screen",
-    pattern = {'p'},
-    handler = function()
+    description = "move to next/previous screen",
+    pattern = {'p', '%d*', '[eq]'},
+    handler = function(_, _, count, movement)
       local c = client.focus
+      count = count == '' and 1 or tonumber(count)
+
       if c then
-        c:move_to_screen()
+        if movement == 'e' then
+          c:move_to_screen(c.screen.index + count)
+        else
+          c:move_to_screen(c.screen.index - count)
+        end
       end
     end
   },
