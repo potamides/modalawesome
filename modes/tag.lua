@@ -243,17 +243,17 @@ local tag_commands = {
   {
     description = "enter client mode",
     pattern = {'i'},
-    handler = function(self) self.startinsert() end
+    handler = function(mode) mode.stop() end
   },
   {
     description = "enter launcher mode",
     pattern = {'r'},
-    handler = function(self) self.startmode("launcher") end
+    handler = function(mode) mode.start("launcher") end
   },
   {
     description = "enter layout mode",
     pattern = {'w'},
-    handler = function(self) self.startmode("layout") end
+    handler = function(mode) mode.start("layout") end
   },
 }
 

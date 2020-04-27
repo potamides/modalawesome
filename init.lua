@@ -46,7 +46,7 @@ local function startmode(modename)
   mode_box:set_text(modename)
 end
 
-local function startinsert(modename)
+local function stopmode(modename)
   return function()
     startmode(modename)
     grabber:stop()
@@ -73,7 +73,7 @@ local function init(args)
   args.modkey       = args.modkey or "Mod4"
   args.modes        = args.modes or require("modalawesome.modes")
   args.default_mode = args.default_mode or "tag"
-  args.insert_name  = args.insert_name or "client"
+  args.stop_name    = args.stop_name or "client"
   args.keybindings  = args.keybindings or {}
 
   gears.table.merge(args.keybindings, create_default_mode_keybindings(args.modkey, args.default_mode))
@@ -88,9 +88,9 @@ local function init(args)
 
   for _, mode in pairs(modes) do
     for _, command in pairs(mode) do
-      command.startmode   = startmode
-      command.startinsert = startinsert(args.insert_name)
-      command.grabber     = grabber
+      command.start   = startmode
+      command.stop    = stopmode(args.stop_name)
+      command.grabber = grabber
     end
   end
 
