@@ -26,7 +26,13 @@ The goal of modalawesome is to allow for complete control over awesome with
 modal commands. To make that possible modalawesome is designed to reimplement
 the functionality of the `globalkeys` and `clientkeys` keybinding tables
 normally found in a `rc.lua` file. Thus after setting up modalawesome these
-tables should be removed.
+tables are redundant and should be removed.
+
+### Quickstart
+
+Add `modalawesome.init()` to your `rc.lua` and restart awesome. Press `r` to
+enter **launcher** mode and `h` to launch a help window with all keybindings.
+However it is advisable to read this file beforehand.
 
 ### Commands
 
