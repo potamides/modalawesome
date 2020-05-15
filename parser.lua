@@ -23,7 +23,9 @@ local function parse(sequence, commands)
     local captures, valid, finished = match(sequence, command.pattern)
 
     if finished then
-      command:handler(table.unpack(captures))
+      -- prevent the keygrabber from stopping when command fails
+      xpcall(command.handler, function(err) awesome.emit_signal("debug::error", err) end,
+        command, table.unpack(captures))
       return true
     elseif valid then
       should_break = false
