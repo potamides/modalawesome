@@ -44,6 +44,7 @@ end
 
 local function startmode(modename)
   mode_box:set_text(modename)
+  sequence_box:set_text('')
 end
 
 local function stopmode(modename)
