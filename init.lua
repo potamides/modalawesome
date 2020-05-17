@@ -10,9 +10,8 @@ local sequence_box = textbox()
 local mode_box     = textbox()
 
 local function create_hotkeys(keybindings, modes_table)
-  -- TODO: on awesome master branch, keys can be created directly in keybindings table, update code on next release
   for _, keybinding in ipairs(keybindings) do
-    awful.key(table.unpack(keybinding))
+    awful.key(keybinding)
   end
 
   local hotkeys = {}

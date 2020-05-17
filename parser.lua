@@ -1,3 +1,5 @@
+local unpack        = unpack or table.unpack -- compatibility with Lua 5.1
+
 local function match(sequence, pattern, index)
   index              = index or 1
   local capture      = string.match(sequence, '^' .. pattern[index])
@@ -24,8 +26,8 @@ local function parse(sequence, commands)
 
     if finished then
       -- prevent the keygrabber from stopping when command fails
-      xpcall(command.handler, function(err) awesome.emit_signal("debug::error", err) end,
-        command, table.unpack(captures))
+      xpcall(function() command:handler(unpack(captures)) end,
+        function(err) awesome.emit_signal("debug::error", err) end)
       return true
     elseif valid then
       should_break = false
