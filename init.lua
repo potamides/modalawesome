@@ -3,6 +3,7 @@ local gears         = require("gears")
 local textbox       = require("wibox.widget.textbox")
 local parser        = require("modalawesome.parser")
 local hotkeys_popup = require("awful.hotkeys_popup.widget")
+local unpack        = unpack or table.unpack -- compatibility with Lua 5.1
 
 local grabber
 local modes
@@ -11,7 +12,7 @@ local mode_box     = textbox()
 
 local function create_hotkeys(keybindings, modes_table)
   for _, keybinding in ipairs(keybindings) do
-    awful.key(keybinding)
+    awful.key(unpack(keybinding))
   end
 
   local hotkeys = {}
