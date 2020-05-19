@@ -10,11 +10,46 @@ local modes
 local sequence_box = textbox()
 local mode_box     = textbox()
 
-local function create_hotkeys(keybindings, modes_table)
-  for _, keybinding in ipairs(keybindings) do
-    awful.key(unpack(keybinding))
+local function grabkey(_, _, key)
+  local sequence = sequence_box.text .. key
+  if parser.parse(sequence, modes[mode_box.text]) then
+    sequence_box:set_text('')
+  else
+    sequence_box:set_text(sequence)
+  end
+end
+
+local function startmode(modename)
+  mode_box:set_text(modename)
+  sequence_box:set_text('')
+  grabber:start()
+end
+
+local function stopmode(modename)
+  return function()
+    mode_box:set_text(modename)
+    sequence_box:set_text('')
+    grabber:stop()
+  end
+end
+
+local function create_default_mode_keybindings(modkey, default_mode)
+  -- need to find keynames for modifiers, e.g. Super_L and Super_R for Mod4
+  local keysyms     = awesome._modifiers[modkey] or {{keysym = modkey}}
+  local keybindings = {}
+
+  for _, keysym in pairs(keysyms) do
+    table.insert(keybindings,
+      {
+        {}, keysym.keysym, function() startmode(default_mode) end,
+        {description = "start " .. default_mode .. " mode", group = "global"}
+      })
   end
 
+  return keybindings
+end
+
+local function create_mode_hotkeys(modes_table)
   local hotkeys = {}
   for modename, commands in pairs(modes_table) do
     hotkeys[modename]              = hotkeys[modename] or {{}}
@@ -33,40 +68,31 @@ local function create_hotkeys(keybindings, modes_table)
   hotkeys_popup.add_hotkeys(hotkeys)
 end
 
-local function grabkey(_, _, key)
-  local sequence = sequence_box.text .. key
-  if parser.parse(sequence, modes[mode_box.text]) then
-    sequence_box:set_text('')
-  else
-    sequence_box:set_text(sequence)
-  end
-end
+local function process_modes(modes_table, stop_name)
+  create_mode_hotkeys(modes_table)
 
-local function startmode(modename)
-  mode_box:set_text(modename)
-  sequence_box:set_text('')
-end
-
-local function stopmode(modename)
-  return function()
-    startmode(modename)
-    grabber:stop()
-  end
-end
-
-local function create_default_mode_keybindings(modkey, default_mode)
-  local keysyms     = awesome._modifiers[modkey] or {{keysym = modkey}}
-  local keybindings = {}
-
-  for _, keysym in pairs(keysyms) do
-    table.insert(keybindings,
-      {
-        {}, keysym.keysym, function() startmode(default_mode) end,
-        {description = "start " .. default_mode .. " mode", group = "global"}
-      })
+  for _, mode in pairs(modes_table) do
+    for _, command in pairs(mode) do
+      command.start   = startmode
+      command.stop    = stopmode(stop_name)
+      command.grabber = grabber
+    end
   end
 
-  return keybindings
+  return modes_table
+end
+
+local function add_root_keybindings(keybindings)
+  -- Delayed call is required to make sure that the root.keys table doesn't get overwritten.
+  -- This solution to set root.keys is not optimal, however using the keygrabber option to set
+  -- root.keys would mean that the keygrabber gets restarted which is not what we want.
+  gears.timer.delayed_call(function()
+    local keys = {}
+    for _, keybinding in ipairs(keybindings) do
+      table.insert(keys, awful.key(unpack(keybinding)))
+    end
+    root.keys(gears.table.join(root.keys() or {}, unpack(keys)))
+  end)
 end
 
 local function init(args)
@@ -78,24 +104,16 @@ local function init(args)
   args.keybindings  = args.keybindings or {}
 
   gears.table.merge(args.keybindings, create_default_mode_keybindings(args.modkey, args.default_mode))
-  modes   = args.modes
+  add_root_keybindings(args.keybindings)
+  modes = process_modes(args.modes, args.stop_name)
+
   grabber = awful.keygrabber {
     keybindings         = args.keybindings,
-    export_keybindings  = true,
     mask_modkeys        = true,
     autostart           = true,
     keypressed_callback = grabkey
   }
 
-  for _, mode in pairs(modes) do
-    for _, command in pairs(mode) do
-      command.start   = startmode
-      command.stop    = stopmode(args.stop_name)
-      command.grabber = grabber
-    end
-  end
-
-  create_hotkeys(args.keybindings, modes)
   startmode(args.default_mode)
 end
 
