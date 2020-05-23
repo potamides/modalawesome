@@ -143,7 +143,7 @@ local tag_commands = {
   },
   {
     description = "move to next/previous screen",
-    pattern = {'p', '%d*', '[eq]'},
+    pattern = {'m', '%d*', '[eq]'},
     handler = function(_, _, count, movement)
       local c = client.focus
       count = count == '' and 1 or tonumber(count)
