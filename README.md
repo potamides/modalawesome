@@ -24,9 +24,13 @@ local modalawesome = require("modalawesome")
 
 The goal of modalawesome is to allow for complete control over awesome with
 modal commands. To make that possible modalawesome is designed to reimplement
-the functionality of the `globalkeys` and `clientkeys` keybinding tables
-normally found in a `rc.lua` file. Thus after setting up modalawesome these
-keybindings are redundant and can be removed.
+the functionality of the
+[client:keys](https://awesomewm.org/doc/api/classes/client.html#client:keys)
+(normally set through
+[awful.rules](https://awesomewm.org/doc/api/libraries/awful.rules.html)) and
+[root.keys](https://awesomewm.org/doc/api/libraries/root.html#keys) keybinding
+tables usually found in an `rc.lua` file. Thus after setting up modalawesome
+these keybindings are redundant and can be safely removed, if desired.
 
 ### Quickstart
 
