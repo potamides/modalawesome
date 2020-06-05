@@ -25,11 +25,11 @@ local layout_commands = {
   },
   {
     description = "change number of master clients",
-    pattern = {'%d*', '[sd]'},
-    handler = function(_, count, movement)
+    pattern = {'m', '%d*', '[fb]'},
+    handler = function(_, _, count, movement)
       count = count == '' and 1 or tonumber(count)
 
-      if movement == 's' then
+      if movement == 'f' then
         awful.tag.incnmaster(count, nil, true)
       else
         awful.tag.incnmaster(-count, nil, true)
@@ -40,11 +40,11 @@ local layout_commands = {
   },
   {
     description = "change number of columns",
-    pattern = {'%d*', '[mn]'},
-    handler = function(_, count, movement)
+    pattern = {'c', '%d*', '[fb]'},
+    handler = function(_, _, count, movement)
       count = count == '' and 1 or tonumber(count)
 
-      if  movement == 'm' then
+      if  movement == 'f' then
         awful.tag.incncol(count, nil, true)
       else
         awful.tag.incncol(-count, nil, true)
@@ -66,11 +66,11 @@ local layout_commands = {
   },
   {
     description = "change useless gap",
-    pattern = {'%d*', '[+-]'},
-    handler = function(_, count, movement)
+    pattern = {'g', '%d*', '[fb]'},
+    handler = function(_, _, count, movement)
       count = count == '' and 1 or tonumber(count)
 
-      if  movement == '+' then
+      if  movement == 'f' then
         awful.tag.incgap(count)
       else
         awful.tag.incgap(-count)
