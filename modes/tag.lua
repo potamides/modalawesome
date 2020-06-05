@@ -232,13 +232,30 @@ local tag_commands = {
   {
     description = "restore minimized",
     pattern = {'u'},
-    handler = function ()
+    handler = function()
         local c = awful.client.restore()
         if c then
             client.focus = c
             c:raise()
         end
     end,
+  },
+  {
+    description = "go back in tag history",
+    pattern = {'Escape'},
+    handler = function()
+      awful.tag.history.restore()
+    end
+  },
+  {
+    description = "go back in client history",
+    pattern = {'Tab'},
+    handler = function()
+      awful.client.focus.history.previous()
+      if client.focus then
+          client.focus:raise()
+      end
+    end
   },
   {
     description = "enter client mode",
