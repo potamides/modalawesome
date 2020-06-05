@@ -105,15 +105,14 @@ local function init(args)
 
   gears.table.merge(args.keybindings, create_default_mode_keybindings(args.modkey, args.default_mode))
   add_root_keybindings(args.keybindings)
-  modes = process_modes(args.modes, args.stop_name)
 
   grabber = awful.keygrabber {
     keybindings         = args.keybindings,
     mask_modkeys        = true,
-    autostart           = true,
     keypressed_callback = grabkey
   }
 
+  modes = process_modes(args.modes, args.stop_name)
   startmode(args.default_mode)
 end
 
