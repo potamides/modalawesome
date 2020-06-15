@@ -1,4 +1,4 @@
-local unpack        = unpack or table.unpack -- compatibility with Lua 5.1
+local unpack        = unpack or table.unpack -- luacheck: globals unpack (compatibility with Lua 5.1)
 
 local function match(sequence, pattern, index)
   index              = index or 1

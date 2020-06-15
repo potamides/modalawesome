@@ -3,7 +3,7 @@ local gears         = require("gears")
 local textbox       = require("wibox.widget.textbox")
 local parser        = require("modalawesome.parser")
 local hotkeys_popup = require("awful.hotkeys_popup.widget")
-local unpack        = unpack or table.unpack -- compatibility with Lua 5.1
+local unpack        = unpack or table.unpack -- luacheck: globals unpack (compatibility with Lua 5.1)
 
 local grabber
 local modes
