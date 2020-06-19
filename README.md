@@ -71,9 +71,10 @@ local command = {
 Each pattern in the **pattern** table has its own argument in the **handler**
 function. Here the `%d*` pattern matches the relative index of the new tag and
 `[fb]` determines if a tag before or after the current tag should be focused.
-This means that e.g. the sequence `1b` would move one tag backwards and `3f`
-would move three tags forward. The first argument of the **handler** function
-(`mode`), which was not used in this example, can be used to switch modes.
+This means that e.g. the sequence `1b` would move one tag backwards and `3000f`
+would move three thousand tags forward. The first argument of the **handler**
+function (`mode`), which was not used in this example, can be used to switch
+modes.
 
 ### Modes
 
