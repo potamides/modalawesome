@@ -1,4 +1,5 @@
 local awful = require("awful")
+local grect = require("gears.geometry").rectangle
 
 local function taghelper(func)
   return function(_, _, count, movement)
@@ -28,7 +29,7 @@ local tag_commands = {
       count = count == '' and 1 or tonumber(count)
 
       for _ = 1, count do
-        awful.client.focus.global_bydirection(directions[movement])
+        awful.client.focus.bydirection(directions[movement])
       end
     end
   },
@@ -73,31 +74,26 @@ local tag_commands = {
       local scr        = awful.screen.focused()
       count = count == '' and 1 or tonumber(count)
 
-      -- this is a bit hacky, but awful.client.swap.global_bydirection doesn't work as expected
+      -- this is a bit hacky, but awful.client.swap.bydirection doesn't work as expected
       if sel then
-          -- move focus
-          for _ = 1, count do
-            awful.client.focus.global_bydirection(directions[movement])
-            local c = client.focus
+        local clients    = scr.clients
+        local geometries = {}
+        for i,cl in ipairs(clients) do
+          geometries[i] = cl:geometry()
+        end
 
-            -- swapping inside a screen
-            if sel.screen == c.screen and sel ~= c then
-                c:swap(sel)
+        local current = sel
+        for _ = 1, count do
+          local target = grect.get_in_direction(directions[movement], geometries, current:geometry())
 
-            -- swapping to an empty screen
-            elseif sel == c then
-                sel:move_to_screen(awful.screen.focused())
-
-            -- swapping to a nonempty screen
-            elseif sel.screen ~= c.screen and sel ~= c then
-                sel:move_to_screen(c.screen)
-                c:move_to_screen(scr)
-            end
-
+          -- If we found a client to swap with, then go for it
+          if target then
+            current = clients[target]
+            current:swap(sel)
+          else
+            break
           end
-          awful.screen.focus(sel.screen)
-          sel:emit_signal("request::activate", "client.swap.global_bydirection",
-                          {raise=false})
+        end
       end
     end
   },
@@ -242,14 +238,14 @@ local tag_commands = {
   },
   {
     description = "go back in tag history",
-    pattern = {'Escape'},
+    pattern = {'z'},
     handler = function()
       awful.tag.history.restore()
     end
   },
   {
     description = "go back in client history",
-    pattern = {'Tab'},
+    pattern = {'Z'},
     handler = function()
       awful.client.focus.history.previous()
       if client.focus then
