@@ -71,7 +71,7 @@ local tag_commands = {
     handler = function(_, count, movement)
       local directions = {H = 'left', J = 'down', K = 'up', L = 'right'}
       local sel        = client.focus
-      local scr        = awful.screen.focused()
+      local scr        = sel.screen
       count = count == '' and 1 or tonumber(count)
 
       -- this is a bit hacky, but awful.client.swap.bydirection doesn't work as expected
@@ -131,9 +131,9 @@ local tag_commands = {
     description = "move to master",
     pattern = {'y'},
     handler = function()
-      local c = client.focus
-      if c then
-        c:swap(awful.client.getmaster())
+      local c, m = client.focus, awful.client.getmaster()
+      if c and m then
+        c:swap(m)
       end
     end
   },
