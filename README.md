@@ -179,7 +179,7 @@ function expects a table with settings. The following settings are available:
 The default settings are defined as follows:
 
 ```lua
-vimawesome.init{
+modalawesome.init{
   modkey       = "Mod4",
   default_mode = "tag",
   modes        = require("modalawesome.modes"),
