@@ -1,10 +1,12 @@
 # modalawesome
-Modalawesome makes it possible to create vi-like modal keybindings for the
+Modalawesome makes it possible to create vi-like keybindings for the
 [awesome window manager](https://awesomewm.org/). It introduces a modal
 alternative to the standard
-[awful.key](https://awesomewm.org/doc/api/libraries/awful.key.html)
-keybindings, which supports complex commands with motions and counts by making
-use of Lua [patterns](https://www.lua.org/manual/5.3/manual.html#6.4.1).
+[awful.key](https://awesomewm.org/doc/api/libraries/awful.key.html) keybindings
+and supports complex commands with motions and counts by making use of Lua
+[patterns](https://www.lua.org/manual/5.3/manual.html#6.4.1). Check out the
+[demo](https://v.redd.it/e4pzh8l53df51/DASH_1080.mp4) to get an overall
+impression of what this is capable of.
 
 ## Installation
 Clone the repository and put it in the Lua search path for awesome 
@@ -23,8 +25,8 @@ local modalawesome = require("modalawesome")
 ## Usage
 
 The goal of modalawesome is to allow for complete control over awesome with
-modal commands. To make that possible modalawesome is designed to reimplement
-the functionality of the
+modal commands. To make that possible modalawesome is designed to replace the
+functionality of the
 [client:keys](https://awesomewm.org/doc/api/classes/client.html#client:keys)
 (normally set through
 [awful.rules](https://awesomewm.org/doc/api/libraries/awful.rules.html)) and
