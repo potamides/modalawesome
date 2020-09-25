@@ -13,7 +13,7 @@ Clone the repository and put it in the Lua search path for awesome
 (e.g. `~/.config/awesome`).
 
 ```sh
-git clone https://github.com/DrCracket/modalawesome
+git clone https://github.com/potamides/modalawesome
 ```
 
 After that include the module at the top of the `rc.lua` file.
