@@ -1,4 +1,5 @@
 # modalawesome
+
 Modalawesome makes it possible to create vi-like keybindings for the
 [awesome window manager](https://awesomewm.org/). It introduces a modal
 alternative to the standard
@@ -9,6 +10,7 @@ and supports complex commands with motions and counts by making use of Lua
 impression of what this is capable of.
 
 ## Installation
+
 Clone the repository and put it in the Lua search path for awesome 
 (e.g. `~/.config/awesome`).
 
@@ -22,17 +24,20 @@ After that include the module at the top of the `rc.lua` file.
 local modalawesome = require("modalawesome")
 ```
 
+This project requires **awesome 4.3+** and **Lua 5.1+**. Older versions *may*
+also work but are untested.
+
 ## Usage
 
-The goal of modalawesome is to allow for complete control over awesome with
-modal commands. To make that possible modalawesome is designed to replace the
-functionality of the
+The goal of modalawesome is to enable complete control over awesome with modal
+commands. To make that possible modalawesome covers the same scope
+as the keybindings set through the
 [client:keys](https://awesomewm.org/doc/api/classes/client.html#client:keys)
-(normally set through
+(normally applied with
 [awful.rules](https://awesomewm.org/doc/api/libraries/awful.rules.html)) and
-[root.keys](https://awesomewm.org/doc/api/libraries/root.html#keys) keybinding
-tables usually found in an `rc.lua` file. Thus after setting up modalawesome
-these keybindings are redundant and can be safely removed, if desired.
+[root.keys](https://awesomewm.org/doc/api/libraries/root.html#keys) tables
+usually found in an `rc.lua` file. Thus after setting up modalawesome the
+standard keybindings are redundant and can be safely removed, if desired.
 
 ### Quickstart
 
