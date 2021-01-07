@@ -1,14 +1,14 @@
-local awful         = require("awful")
-local gears         = require("gears")
-local textbox       = require("wibox.widget.textbox")
-local parser        = require("modalawesome.parser")
+local awful = require("awful")
+local gears = require("gears")
+local textbox = require("wibox.widget.textbox")
+local parser = require("modalawesome.parser")
 local hotkeys_popup = require("awful.hotkeys_popup.widget")
-local unpack        = unpack or table.unpack -- luacheck: globals unpack (compatibility with Lua 5.1)
+local unpack = unpack or table.unpack -- luacheck: globals unpack (compatibility with Lua 5.1)
 
 local grabber
 local modes
 local sequence_box = textbox()
-local mode_box     = textbox()
+local mode_box = textbox()
 
 local function grabkey(_, _, key)
   local sequence = sequence_box.text .. key
@@ -35,7 +35,7 @@ end
 
 local function create_default_mode_keybindings(modkey, default_mode)
   -- need to find keynames for modifiers, e.g. Super_L and Super_R for Mod4
-  local keysyms     = awesome._modifiers[modkey] or {{keysym = modkey}}
+  local keysyms = awesome._modifiers[modkey] or {{keysym = modkey}}
   local keybindings = {}
 
   for _, keysym in pairs(keysyms) do

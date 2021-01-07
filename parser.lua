@@ -1,28 +1,29 @@
-local unpack        = unpack or table.unpack -- luacheck: globals unpack (compatibility with Lua 5.1)
+local unpack = unpack or table.unpack -- luacheck: globals unpack (compatibility with Lua 5.1)
 
-local function match(sequence, pattern, index)
-  index              = index or 1
-  local capture      = string.match(sequence, '^' .. pattern[index])
-  local sub_sequence = string.gsub(sequence, '^' .. pattern[index], '')
+local function match(sequence, pattern)
+  local captures, matches = {}
 
-  if capture then
-    if #sub_sequence == 0 and #pattern == index then
-      return {capture}, true, true
-    elseif #sub_sequence == 0 and #pattern > index then
-      return {capture}, true, false
-    elseif #sub_sequence > 0 and #pattern > index then
-      local captures, valid, finished = match(sub_sequence, pattern, index + 1)
-      table.insert(captures, 1, capture)
-      return captures, valid, finished
-    end
+  for index = 1, #pattern do
+    sequence, matches = string.gsub(sequence, '^' .. pattern[index],
+      function(capture)
+        table.insert(captures, capture)
+        return ''
+      end)
+
+      if matches == 0 then
+        return false
+      elseif #sequence == 0 and index < #pattern then
+        return true, false
+      end
   end
-  return {}, false, false
+
+  return true, true, captures
 end
 
 local function parse(sequence, commands)
-  local should_break = true
+  local sequence_processed = true
   for _, command in ipairs(commands) do
-    local captures, valid, finished = match(sequence, command.pattern)
+    local valid, finished, captures = match(sequence, command.pattern)
 
     if finished then
       -- prevent the keygrabber from stopping when command fails
@@ -30,15 +31,11 @@ local function parse(sequence, commands)
         function(err) awesome.emit_signal("debug::error", err) end)
       return true
     elseif valid then
-      should_break = false
+      sequence_processed = false
     end
   end
 
-  if should_break then
-    return true
-  end
-
-  return false
+  return sequence_processed
 end
 
 return {parse = parse}
