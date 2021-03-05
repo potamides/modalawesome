@@ -1,7 +1,8 @@
 local awful = require("awful")
 local grect = require("gears.geometry").rectangle
 
-local function taghelper(func)
+-- helper function used by some bindings which manipulate tags
+local function find_tag(func)
   return function(_, _, count, movement)
     local screen, index = awful.screen.focused()
     count = count == '' and 1 or tonumber(count)
@@ -54,29 +55,29 @@ local tag_commands = {
   },
   {
     description = "focus next/previous screen",
-    pattern = {'%d*', '[eq]'},
+    pattern = {'%d*', '[ey]'},
     handler = function(_, count, movement)
       count = count == '' and 1 or tonumber(count)
 
       if movement == 'e' then
         awful.screen.focus_relative(count)
-      elseif movement == 'q' then
+      else
         awful.screen.focus_relative(-count)
       end
     end
   },
   {
     description = "swap client by direction",
-    pattern = {'%d*', '[HJKL]'},
-    handler = function(_, count, movement)
-      local directions = {H = 'left', J = 'down', K = 'up', L = 'right'}
-      local sel        = client.focus
-      local scr        = sel.screen
+    pattern = {'m', '%d*', '[hjkl]'},
+    handler = function(_, _, count, movement)
+      local directions = {h = 'left', j = 'down', k = 'up', l = 'right'}
+      local sel = client.focus
+      local scr = sel.screen
       count = count == '' and 1 or tonumber(count)
 
       -- this is a bit hacky, but awful.client.swap.bydirection doesn't work as expected
       if sel then
-        local clients    = scr.clients
+        local clients = scr.clients
         local geometries = {}
         for i,cl in ipairs(clients) do
           geometries[i] = cl:geometry()
@@ -105,31 +106,31 @@ local tag_commands = {
   {
     description = "toggle tag",
     pattern = {'t', '%d*', '[gfb]'},
-    handler = taghelper(awful.tag.viewtoggle)
+    handler = find_tag(awful.tag.viewtoggle)
   },
   {
     description = "move focused client to tag",
     pattern = {'m', '%d*', '[gfb]'},
-    handler = taghelper(function(arg)
+    handler = find_tag(function(tag)
       local c = client.focus
       if c then
-        c:move_to_tag(arg)
+        c:move_to_tag(tag)
       end
     end)
   },
   {
     description = "toggle focused client on tag",
-    pattern = {'d', '%d*', '[gfb]'},
-    handler = taghelper(function(arg)
+    pattern = {'c', '%d*', '[gfb]'},
+    handler = find_tag(function(tag)
       local c = client.focus
       if c then
-        c:toggle_tag(arg)
+        c:toggle_tag(tag)
       end
     end)
   },
   {
     description = "move to master",
-    pattern = {'y'},
+    pattern = {'m', 'm'},
     handler = function()
       local c, m = client.focus, awful.client.getmaster()
       if c and m then
@@ -139,7 +140,7 @@ local tag_commands = {
   },
   {
     description = "move to next/previous screen",
-    pattern = {'m', '%d*', '[eq]'},
+    pattern = {'m', '%d*', '[ey]'},
     handler = function(_, _, count, movement)
       local c = client.focus
       count = count == '' and 1 or tonumber(count)
@@ -155,7 +156,7 @@ local tag_commands = {
   },
   {
     description = "close client",
-    pattern = {'c'},
+    pattern = {'q'},
     handler = function()
       local c = client.focus
       if c then
@@ -165,7 +166,7 @@ local tag_commands = {
   },
   {
     description = "toggle floating",
-    pattern = {'V'},
+    pattern = {'p', 'h'},
     handler = function()
       local c = client.focus
       if c then
@@ -175,7 +176,7 @@ local tag_commands = {
   },
   {
     description = "toggle keep on top",
-    pattern = {'O'},
+    pattern = {'p', 'o'},
     handler = function()
       local c = client.focus
       if c then
@@ -185,7 +186,7 @@ local tag_commands = {
   },
   {
     description = "toggle sticky",
-    pattern = {'S'},
+    pattern = {'p', 's'},
     handler = function()
       local c = client.focus
       if c then
@@ -195,7 +196,7 @@ local tag_commands = {
   },
   {
     description = "toggle fullscreen",
-    pattern = {'F'},
+    pattern = {'p', 'f'},
     handler = function()
       local c = client.focus
       if c then
@@ -206,7 +207,7 @@ local tag_commands = {
   },
   {
     description = "toggle maximized",
-    pattern = {'M'},
+    pattern = {'p', 'm'},
     handler = function()
       local c = client.focus
       if c then
@@ -238,14 +239,14 @@ local tag_commands = {
   },
   {
     description = "go back in tag history",
-    pattern = {'z'},
+    pattern = {'z', 't'},
     handler = function()
       awful.tag.history.restore()
     end
   },
   {
     description = "go back in client history",
-    pattern = {'Z'},
+    pattern = {'z', 'c'},
     handler = function()
       awful.client.focus.history.previous()
       if client.focus then
@@ -265,7 +266,7 @@ local tag_commands = {
   },
   {
     description = "enter layout mode",
-    pattern = {'w'},
+    pattern = {'v'},
     handler = function(mode) mode.start("layout") end
   },
 }
