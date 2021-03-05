@@ -21,14 +21,12 @@ end
 
 local function startmode(modename)
   mode_box:set_text(modename)
-  sequence_box:set_text('')
   grabber:start()
 end
 
 local function stopmode(modename)
   return function()
     mode_box:set_text(modename)
-    sequence_box:set_text('')
     grabber:stop()
   end
 end
@@ -95,6 +93,16 @@ local function add_root_keybindings(keybindings)
   end)
 end
 
+local function create_error_handler()
+  -- awesome stops keygrabbers when runtime errors occur, so make sure to restart
+  -- our keygrabber to still be able to control awesome under error conditions.
+  awesome.connect_signal("debug::error", function(_, ignore)
+    if not ignore and grabber == awful.keygrabber.current_instance then
+      gears.timer.delayed_call(function() keygrabber.run(grabber.grabber) end)
+    end
+  end)
+end
+
 local function init(args)
   args              = args or {}
   args.modkey       = args.modkey or "Mod4"
@@ -112,6 +120,7 @@ local function init(args)
     keypressed_callback = grabkey
   }
 
+  create_error_handler()
   modes = process_modes(args.modes, args.stop_name)
   startmode(args.default_mode)
 end

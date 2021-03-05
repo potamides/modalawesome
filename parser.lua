@@ -26,9 +26,9 @@ local function parse(sequence, commands)
     local valid, finished, captures = match(sequence, command.pattern)
 
     if finished then
-      -- prevent the keygrabber from stopping when command fails
+      -- make sure to return to caller gracefully, even under error conditions
       xpcall(function() command:handler(unpack(captures)) end,
-        function(err) awesome.emit_signal("debug::error", err) end)
+        function(err) awesome.emit_signal("debug::error", err, true) end)
       return true
     elseif valid then
       sequence_processed = false
