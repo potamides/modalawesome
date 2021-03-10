@@ -37,22 +37,19 @@ local function create_default_mode_keybindings(modkey, default_mode)
   local keybindings = {}
 
   for _, keysym in pairs(keysyms) do
-    table.insert(keybindings,
-      {
-        {}, keysym.keysym, function() startmode(default_mode) end,
-        {description = "start " .. default_mode .. " mode", group = "global"}
-      })
+    table.insert(keybindings, {{}, keysym.keysym, function()
+      startmode(default_mode)
+      sequence_box:set_text('')
+    end})
   end
 
   return keybindings
 end
 
-local function create_mode_hotkeys(modes_table)
-  local hotkeys = {}
+local function create_mode_hotkeys(modes_table, stop_name, default_mode, modkey, format)
+  local hotkeys = {[stop_name] = {{modifiers = {}, keys = {}}}}
   for modename, commands in pairs(modes_table) do
-    hotkeys[modename]              = hotkeys[modename] or {{}}
-    hotkeys[modename][1].keys      = hotkeys[modename].keys or {}
-    hotkeys[modename][1].modifiers = hotkeys[modename].modifiers or {}
+    hotkeys[modename] = {{modifiers = {}, keys = {}}}
 
     local keys = hotkeys[modename][1].keys
     for _, command in ipairs(commands) do
@@ -63,11 +60,17 @@ local function create_mode_hotkeys(modes_table)
     end
   end
 
+  for modename, _ in pairs(hotkeys) do
+    if modename ~= default_mode then
+      hotkeys[modename][1].keys[modkey] = string.format(format, default_mode)
+    end
+  end
+
   hotkeys_popup.add_hotkeys(hotkeys)
 end
 
-local function process_modes(modes_table, stop_name)
-  create_mode_hotkeys(modes_table)
+local function process_modes(modes_table, stop_name, default_mode, modkey, format)
+  create_mode_hotkeys(modes_table, stop_name, default_mode, modkey, format)
 
   for _, mode in pairs(modes_table) do
     for _, command in pairs(mode) do
@@ -96,9 +99,16 @@ end
 local function create_error_handler()
   -- awesome stops keygrabbers when runtime errors occur, so make sure to restart
   -- our keygrabber to still be able to control awesome under error conditions.
+  local in_error = false
   awesome.connect_signal("debug::error", function(_, ignore)
-    if not ignore and grabber == awful.keygrabber.current_instance then
-      gears.timer.delayed_call(function() keygrabber.run(grabber.grabber) end)
+    -- Make sure we don't go into an endless error loop
+    if not in_error and not ignore and grabber == awful.keygrabber.current_instance then
+      in_error = true
+      grabber:stop()
+      gears.timer.delayed_call(function()
+        grabber:start()
+        in_error = false
+      end)
     end
   end)
 end
@@ -106,6 +116,7 @@ end
 local function init(args)
   args              = args or {}
   args.modkey       = args.modkey or "Mod4"
+  args.format       = args.format or "enter %s mode"
   args.modes        = args.modes or require("modalawesome.modes")
   args.default_mode = args.default_mode or "tag"
   args.stop_name    = args.stop_name or "client"
@@ -121,7 +132,7 @@ local function init(args)
   }
 
   create_error_handler()
-  modes = process_modes(args.modes, args.stop_name)
+  modes = process_modes(args.modes, args.stop_name, args.default_mode, args.modkey, args.format)
   startmode(args.default_mode)
 end
 
