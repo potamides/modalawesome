@@ -1,29 +1,44 @@
+local hasitem = require("gears.table").hasitem
 local unpack = unpack or table.unpack -- luacheck: globals unpack (compatibility with Lua 5.1)
 
-local function match(sequence, pattern)
-  local captures, matches = {}
+local parser = {}
 
-  for index = 1, #pattern do
-    sequence, matches = string.gsub(sequence, '^' .. pattern[index],
-      function(capture)
-        table.insert(captures, capture)
-        return ''
-      end)
+function parser.match(sequence, modifiers, pattern)
+  local captures, matches, modifier_mismatch = {}
 
-      if matches == 0 then
-        return false
-      elseif #sequence == 0 and index < #pattern then
-        return true, false
+  for index, item in ipairs(pattern) do
+    sequence, matches = string.gsub(sequence, '^' .. (item[#item] or item), function(capture)
+      table.insert(captures, capture)
+      return ''
+    end)
+
+    if type(item) == "table" then
+      if #modifiers[index] == #item - 1 then
+        for _, mod in pairs(modifiers[index]) do
+          if not hasitem(item, mod) then
+            modifier_mismatch = true
+            break
+          end
+        end
+      else
+        modifier_mismatch = true
       end
+    end
+
+    if matches == 0 or modifier_mismatch then
+      return false
+    elseif #sequence == 0 and index < #pattern then
+      return true, false
+    end
   end
 
   return true, true, captures
 end
 
-local function parse(sequence, commands)
+function parser.evaluate(sequence, modifiers, commands)
   local sequence_processed = true
   for _, command in ipairs(commands) do
-    local valid, finished, captures = match(sequence, command.pattern)
+    local valid, finished, captures = parser.match(sequence, modifiers, command.pattern)
 
     if finished then
       -- make sure to return to caller gracefully, even under error conditions
@@ -38,4 +53,4 @@ local function parse(sequence, commands)
   return sequence_processed
 end
 
-return {parse = parse}
+return parser

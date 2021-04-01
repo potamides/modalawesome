@@ -202,7 +202,9 @@ local keybindings = {
   {{}, "XF86MonBrightnessUp", function () awful.spawn("xbacklight -inc 10") end},
 }
 ```
-### Advanced
+## Advanced
+
+### Access Internal Keygrabber
 
 The `mode` argument of the **handler** function also exposes the internal
 [keygrabber](https://awesomewm.org/doc/api/classes/awful.keygrabber.html) used
@@ -216,3 +218,15 @@ handler = function(mode, ...)
   mode.grabber:start()
 end
 ```
+
+### Explicit Modifier Keys
+
+In many cases it's not necessary to explicitly specify the modifiers to use in
+a pattern, instead it's sufficient to specify the corresponding key directly.
+To map `Shift-s` you can just use the pattern `{"S"}` for example. However this
+doesn't work with special keys like `Tab` or modifiers like `Control`. In this
+case you can use the extended pattern syntax, where a pattern item can be
+written as a table with additional modifiers. For example if you want to map
+`Control-w [hjkl]` you can use the pattern `{{"Control", "w"}, "[hjkl]"}` or if
+you want to map `Control-Shift-Tab` you can use `{{"Control", "Shift", "Tab"}}`
+and so on. Supported modifiers are `Shift`, `Control`, `Mod1` and `Mod4`.
