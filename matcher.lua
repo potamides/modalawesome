@@ -1,10 +1,10 @@
 local hasitem = require("gears.table").hasitem
 local unpack = unpack or table.unpack -- luacheck: globals unpack (compatibility with Lua 5.1)
 
-local parser = {}
+local matcher = {}
 
-function parser.match(sequence, modifiers, pattern)
-  local captures, matches, modifier_mismatch = {}
+function matcher.parse(sequence, modifiers, pattern)
+  local captures, matches = {}
 
   for index, item in ipairs(pattern) do
     sequence, matches = string.gsub(sequence, '^' .. (item[#item] or item), function(capture)
@@ -12,20 +12,20 @@ function parser.match(sequence, modifiers, pattern)
       return ''
     end)
 
-    if type(item) == "table" then
-      if #modifiers[index] == #item - 1 then
-        for _, mod in pairs(modifiers[index]) do
+    -- modifiers are only compared for last match (applies only if pattern is a table)
+    if #sequence == 0 and type(item) == "table" then
+      if #modifiers == #item - 1 then
+        for _, mod in pairs(modifiers) do
           if not hasitem(item, mod) then
-            modifier_mismatch = true
-            break
+            return false
           end
         end
       else
-        modifier_mismatch = true
+        return false
       end
     end
 
-    if matches == 0 or modifier_mismatch then
+    if matches == 0 then
       return false
     elseif #sequence == 0 and index < #pattern then
       return true, false
@@ -35,10 +35,10 @@ function parser.match(sequence, modifiers, pattern)
   return true, true, captures
 end
 
-function parser.evaluate(sequence, modifiers, commands)
+function matcher.execute(sequence, modifiers, commands)
   local sequence_processed = true
   for _, command in ipairs(commands) do
-    local valid, finished, captures = parser.match(sequence, modifiers, command.pattern)
+    local valid, finished, captures = matcher.parse(sequence, modifiers, command.pattern)
 
     if finished then
       -- make sure to return to caller gracefully, even under error conditions
@@ -53,4 +53,4 @@ function parser.evaluate(sequence, modifiers, commands)
   return sequence_processed
 end
 
-return parser
+return matcher

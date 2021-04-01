@@ -2,19 +2,17 @@ local awful = require("awful")
 local gears = require("gears")
 local beautiful = require("beautiful")
 local textbox = require("wibox.widget.textbox")
-local evaluate = require("modalawesome.parser").evaluate
+local execute = require("modalawesome.matcher").execute
 local hotkeys_popup = require("awful.hotkeys_popup.widget")
 local unpack = unpack or table.unpack -- luacheck: globals unpack (compatibility with Lua 5.1)
 
-local modifiers, grabber, modes = {}
+local grabber, modes = {}
 local modalawesome = {sequence = textbox(), active_mode = textbox()}
 
-local function grabkey(_, mod, key)
+local function grabkey(_, modifiers, key)
   local sequence = modalawesome.sequence.text .. key
-  table.insert(modifiers, mod)
-  if evaluate(sequence, modifiers, modes[modalawesome.active_mode.text]) then
+  if execute(sequence, modifiers, modes[modalawesome.active_mode.text]) then
     modalawesome.sequence:set_text('')
-    modifiers = {}
   else
     modalawesome.sequence:set_text(sequence)
   end
