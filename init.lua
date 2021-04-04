@@ -1,5 +1,6 @@
 local awful = require("awful")
-local gears = require("gears")
+local gtable = require("gears.table")
+local gtimer = require("gears.timer")
 local beautiful = require("beautiful")
 local textbox = require("wibox.widget.textbox")
 local execute = require("modalawesome.matcher").execute
@@ -61,7 +62,7 @@ local function create_hotkeys(modes_table, stop_name, default_mode, modkey, form
 
     local keys = hotkeys[modename][1].keys
     for _, command in ipairs(commands) do
-      local hotkeys_string = table.concat(gears.table.map(markup, command.pattern))
+      local hotkeys_string = table.concat(gtable.map(markup, command.pattern))
       -- when multiple commands with same keybindings exist, only respect first occurence
       if not keys[hotkeys_string] then
         keys[hotkeys_string] = command.description
@@ -80,10 +81,17 @@ end
 
 local function process_modes(modes_table, stop_name)
   for _, mode in pairs(modes_table) do
-    for _, command in pairs(mode) do
+    for _, command in pairs(gtable.reverse(mode)) do
       command.start   = startmode
       command.stop    = function() stopmode(stop_name) end
       command.grabber = grabber
+
+      -- Commands which use explicit modifiers should come before normal commands,
+      -- since normal commands don't do any modifier matching.
+      if #gtable.keys_filter(command.pattern, "table") > 0 then
+        table.insert(mode, 1, table.remove(mode, gtable.find_first_key(mode,
+          function(_, cmd) return cmd == command end, true)))
+      end
     end
   end
 
@@ -94,25 +102,25 @@ local function add_root_keybindings(keybindings)
   -- Delayed call is required to make sure that the root.keys table doesn't get overwritten.
   -- This solution to set root.keys is not optimal, however using the keygrabber option to set
   -- root.keys would mean that the keygrabber gets restarted which is not what we want.
-  gears.timer.delayed_call(function()
+  gtimer.delayed_call(function()
     local keys = {}
     for _, keybinding in ipairs(keybindings) do
       table.insert(keys, awful.key(unpack(keybinding)))
     end
-    root.keys(gears.table.join(root.keys() or {}, unpack(keys)))
+    root.keys(gtable.join(root.keys() or {}, unpack(keys)))
   end)
 end
 
+-- Awesome stops keygrabbers when runtime errors occur, this function makes sure to restart
+-- our keygrabber to still be able to control awesome under error conditions.
 local function create_error_handler()
-  -- awesome stops keygrabbers when runtime errors occur, so make sure to restart
-  -- our keygrabber to still be able to control awesome under error conditions.
   local in_error = false
   awesome.connect_signal("debug::error", function(_, ignore)
     -- Make sure we don't go into an endless error loop
     if not in_error and not ignore and grabber == awful.keygrabber.current_instance then
       in_error = true
       grabber:stop()
-      gears.timer.delayed_call(function()
+      gtimer.delayed_call(function()
         grabber:start()
         in_error = false
       end)
@@ -129,7 +137,7 @@ function modalawesome.init(args)
   args.stop_name    = args.stop_name or "client"
   args.keybindings  = args.keybindings or {}
 
-  gears.table.merge(args.keybindings, create_default_mode_keybindings(args.modkey, args.default_mode))
+  gtable.merge(args.keybindings, create_default_mode_keybindings(args.modkey, args.default_mode))
   add_root_keybindings(args.keybindings)
 
   grabber = awful.keygrabber {
