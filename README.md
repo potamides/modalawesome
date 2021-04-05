@@ -75,13 +75,13 @@ local command = {
 }
 ```
 
-Each pattern in the **pattern** table has its own argument in the **handler**
-function. Here the `%d*` pattern matches the relative index of the new tag and
-`[fb]` determines if a tag before or after the current tag should be focused.
-This means that e.g. the sequence `1b` would move one tag backwards and `3000f`
-would move three thousand tags forward. The first argument of the **handler**
-function (`mode`), which was not used in this example, can be used to switch
-modes.
+Each item in the **pattern** table has its own argument in the **handler**
+function. Here `%d*` matches the relative index of the new tag and `[fb]`
+determines if a tag before or after the current tag should be focused. This
+means that e.g. the sequence `1b` would focus the previous tag and `3000f`
+would move the focus three thousand tags forward. The first argument of the
+**handler** function (`mode`), which was not used in this example, can be used
+to switch modes.
 
 ### Modes
 
@@ -166,6 +166,7 @@ s.mywibox:setup {
   },
 }
 ```
+
 ### Initialization
 
 For configuration purposes modalawesome provides the `init` function. This
@@ -202,7 +203,9 @@ local keybindings = {
   {{}, "XF86MonBrightnessUp", function () awful.spawn("xbacklight -inc 10") end},
 }
 ```
-### Advanced
+## Advanced
+
+### Access Internal Keygrabber
 
 The `mode` argument of the **handler** function also exposes the internal
 [keygrabber](https://awesomewm.org/doc/api/classes/awful.keygrabber.html) used
@@ -215,4 +218,29 @@ handler = function(mode, ...)
   -- ...
   mode.grabber:start()
 end
+```
+
+### Explicit Modifier Keys
+
+In many cases it's not necessary to explicitly specify the modifiers to use in
+a pattern, instead it's sufficient to specify the corresponding symbol
+directly.
+
+```lua
+local pattern = {"S"} -- matches "Shift-s"
+```
+
+However this doesn't work with special keys like `Tab` or modifiers like
+`Control`. For these cases you can use a slightly extended pattern syntax. Each
+item in the pattern table for which explicit modifier matching is desired
+should be replaced with a table with the modifiers as first elements and the
+corresponding item as the last. Supported modifiers are `Shift`, `Control`,
+`Mod1` and `Mod4`.
+
+```lua
+local pattern = {{"Control", "w"}, "[hjkl]"} -- matches "Control-w [hjkl]"
+```
+
+```lua
+local pattern = {{"Control", "Shift", "Tab"}} -- matches "Control-Shift-Tab"
 ```

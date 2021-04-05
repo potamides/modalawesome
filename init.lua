@@ -1,34 +1,32 @@
 local awful = require("awful")
-local gears = require("gears")
+local gtable = require("gears.table")
+local gtimer = require("gears.timer")
+local beautiful = require("beautiful")
 local textbox = require("wibox.widget.textbox")
-local parser = require("modalawesome.parser")
+local execute = require("modalawesome.matcher").execute
 local hotkeys_popup = require("awful.hotkeys_popup.widget")
 local unpack = unpack or table.unpack -- luacheck: globals unpack (compatibility with Lua 5.1)
 
-local grabber
-local modes
-local sequence_box = textbox()
-local mode_box = textbox()
+local grabber, modes = {}
+local modalawesome = {sequence = textbox(), active_mode = textbox()}
 
-local function grabkey(_, _, key)
-  local sequence = sequence_box.text .. key
-  if parser.parse(sequence, modes[mode_box.text]) then
-    sequence_box:set_text('')
+local function grabkey(_, modifiers, key)
+  local sequence = modalawesome.sequence.text .. key
+  if execute(sequence, modifiers, modes[modalawesome.active_mode.text]) then
+    modalawesome.sequence:set_text('')
   else
-    sequence_box:set_text(sequence)
+    modalawesome.sequence:set_text(sequence)
   end
 end
 
 local function startmode(modename)
-  mode_box:set_text(modename)
+  modalawesome.active_mode:set_text(modename)
   grabber:start()
 end
 
 local function stopmode(modename)
-  return function()
-    mode_box:set_text(modename)
-    grabber:stop()
-  end
+  modalawesome.active_mode:set_text(modename)
+  grabber:stop()
 end
 
 local function create_default_mode_keybindings(modkey, default_mode)
@@ -39,23 +37,35 @@ local function create_default_mode_keybindings(modkey, default_mode)
   for _, keysym in pairs(keysyms) do
     table.insert(keybindings, {{}, keysym.keysym, function()
       startmode(default_mode)
-      sequence_box:set_text('')
+      modalawesome.sequence:set_text('')
     end})
   end
 
   return keybindings
 end
 
-local function create_mode_hotkeys(modes_table, stop_name, default_mode, modkey, format)
+local function markup(item)
+  if type(item) == "string" then
+    return item
+  end
+
+  local color = beautiful.hotkeys_modifiers_fg or beautiful.bg_minimize or "#555555"
+  local key = item[#item]
+  local mod_string = table.concat(item, "-"):sub(1, -(#key + 1))
+  return string.format('<span foreground=%q>%s</span>%s', color, mod_string, key)
+end
+
+local function create_hotkeys(modes_table, stop_name, default_mode, modkey, format)
   local hotkeys = {[stop_name] = {{modifiers = {}, keys = {}}}}
   for modename, commands in pairs(modes_table) do
     hotkeys[modename] = {{modifiers = {}, keys = {}}}
 
     local keys = hotkeys[modename][1].keys
     for _, command in ipairs(commands) do
+      local hotkeys_string = table.concat(gtable.map(markup, command.pattern))
       -- when multiple commands with same keybindings exist, only respect first occurence
-      if not keys[table.concat(command.pattern)] then
-        keys[table.concat(command.pattern)] = command.description
+      if not keys[hotkeys_string] then
+        keys[hotkeys_string] = command.description
       end
     end
   end
@@ -69,14 +79,19 @@ local function create_mode_hotkeys(modes_table, stop_name, default_mode, modkey,
   hotkeys_popup.add_hotkeys(hotkeys)
 end
 
-local function process_modes(modes_table, stop_name, default_mode, modkey, format)
-  create_mode_hotkeys(modes_table, stop_name, default_mode, modkey, format)
-
+local function process_modes(modes_table, stop_name)
   for _, mode in pairs(modes_table) do
-    for _, command in pairs(mode) do
+    for _, command in pairs(gtable.reverse(mode)) do
       command.start   = startmode
-      command.stop    = stopmode(stop_name)
+      command.stop    = function() stopmode(stop_name) end
       command.grabber = grabber
+
+      -- Commands which use explicit modifiers should come before normal commands,
+      -- since normal commands don't do any modifier matching.
+      if #gtable.keys_filter(command.pattern, "table") > 0 then
+        table.insert(mode, 1, table.remove(mode, gtable.find_first_key(mode,
+          function(_, cmd) return cmd == command end, true)))
+      end
     end
   end
 
@@ -87,25 +102,25 @@ local function add_root_keybindings(keybindings)
   -- Delayed call is required to make sure that the root.keys table doesn't get overwritten.
   -- This solution to set root.keys is not optimal, however using the keygrabber option to set
   -- root.keys would mean that the keygrabber gets restarted which is not what we want.
-  gears.timer.delayed_call(function()
+  gtimer.delayed_call(function()
     local keys = {}
     for _, keybinding in ipairs(keybindings) do
       table.insert(keys, awful.key(unpack(keybinding)))
     end
-    root.keys(gears.table.join(root.keys() or {}, unpack(keys)))
+    root.keys(gtable.join(root.keys() or {}, unpack(keys)))
   end)
 end
 
+-- Awesome stops keygrabbers when runtime errors occur, this function makes sure to restart
+-- our keygrabber to still be able to control awesome under error conditions.
 local function create_error_handler()
-  -- awesome stops keygrabbers when runtime errors occur, so make sure to restart
-  -- our keygrabber to still be able to control awesome under error conditions.
   local in_error = false
   awesome.connect_signal("debug::error", function(_, ignore)
     -- Make sure we don't go into an endless error loop
     if not in_error and not ignore and grabber == awful.keygrabber.current_instance then
       in_error = true
       grabber:stop()
-      gears.timer.delayed_call(function()
+      gtimer.delayed_call(function()
         grabber:start()
         in_error = false
       end)
@@ -113,7 +128,7 @@ local function create_error_handler()
   end)
 end
 
-local function init(args)
+function modalawesome.init(args)
   args              = args or {}
   args.modkey       = args.modkey or "Mod4"
   args.format       = args.format or "enter %s mode"
@@ -122,7 +137,7 @@ local function init(args)
   args.stop_name    = args.stop_name or "client"
   args.keybindings  = args.keybindings or {}
 
-  gears.table.merge(args.keybindings, create_default_mode_keybindings(args.modkey, args.default_mode))
+  gtable.merge(args.keybindings, create_default_mode_keybindings(args.modkey, args.default_mode))
   add_root_keybindings(args.keybindings)
 
   grabber = awful.keygrabber {
@@ -132,8 +147,9 @@ local function init(args)
   }
 
   create_error_handler()
-  modes = process_modes(args.modes, args.stop_name, args.default_mode, args.modkey, args.format)
+  create_hotkeys(args.modes, args.stop_name, args.default_mode, args.modkey, args.format)
+  modes = process_modes(args.modes, args.stop_name)
   startmode(args.default_mode)
 end
 
-return {init = init, sequence = sequence_box, active_mode = mode_box}
+return modalawesome
