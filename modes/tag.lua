@@ -1,22 +1,24 @@
 local awful = require("awful")
 local grect = require("gears.geometry").rectangle
+local gfind = require("gears.table").find_keys
 
 -- helper function used by some bindings which manipulate tags
 local function find_tag(func)
-  return function(_, _, count, movement)
-    local screen, index = awful.screen.focused()
+  return function(_, ...)
+    local screen, count, movement, index = awful.screen.focused(), select(-2, ...)
+    local showntags = gfind(screen.tags, function(_, t) return not t.hide end, true)
     count = count == '' and 1 or tonumber(count)
 
     if movement == 'g' then
       index = count
     elseif movement == 'f' then
-      index = ((screen.selected_tag.index - 1 + count) % #screen.tags) + 1
+      index = ((screen.selected_tag.index - 1 + count) % #showntags) + 1
     elseif movement == 'b' then
-      index = ((screen.selected_tag.index - 1 - count) % #screen.tags) + 1
+      index = ((screen.selected_tag.index - 1 - count) % #showntags) + 1
     end
 
-    if screen.tags[index] then
-      func(screen.tags[index])
+    if screen.tags[showntags[index]] then
+      func(screen.tags[showntags[index]])
     end
   end
 end
@@ -31,25 +33,6 @@ local tag_commands = {
 
       for _ = 1, count do
         awful.client.focus.bydirection(directions[movement])
-      end
-    end
-  },
-  {
-    description = "focus tag by direction or globally",
-    pattern = {'%d*', '[gfb]'},
-    handler = function(_, count, movement)
-      count = count == '' and 1 or tonumber(count)
-
-      if movement == 'g' then
-        local screen = awful.screen.focused()
-        local tag = screen.tags[count]
-        if tag then
-          tag:view_only()
-        end
-      elseif movement == 'f' then
-        awful.tag.viewidx(count)
-      elseif movement == 'b' then
-        awful.tag.viewidx(-count)
       end
     end
   },
@@ -102,6 +85,11 @@ local tag_commands = {
     description = "jump to urgent client",
     pattern = {'x'},
     handler = function() awful.client.urgent.jumpto() end
+  },
+  {
+    description = "focus tag by direction or globally",
+    pattern = {'%d*', '[gfb]'},
+    handler = find_tag(awful.tag.object.view_only)
   },
   {
     description = "toggle tag",
