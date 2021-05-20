@@ -25,7 +25,7 @@ function matcher.parse(sequence, modifiers, pattern)
       end
     end
 
-    if matches == 0 then
+    if matches == 0 or (#sequence > 0 and index == #pattern) then
       return false
     elseif #sequence == 0 and index < #pattern then
       return true, false
