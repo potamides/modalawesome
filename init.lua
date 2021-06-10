@@ -56,19 +56,12 @@ local function markup(item)
 end
 
 local function create_hotkeys(modes_table, stop_name, default_mode, modkey, format)
-  local description = string.format(format, default_mode)
-  local hotkeys = {[stop_name] = {{modifiers = {}, keys = {[modkey] = description}}}}
-
-  for key, mode in pairs(modes_table) do
-    local modename = type(key) == "string" and key or key.name or table.concat(key, "/")
+  local hotkeys = {[stop_name] = {{modifiers = {}, keys = {}}}}
+  for modename, commands in pairs(modes_table) do
     hotkeys[modename] = {{modifiers = {}, keys = {}}}
+
     local keys = hotkeys[modename][1].keys
-
-    if type(key) == "string" and modename ~= default_mode then
-      hotkeys[modename][1].keys[modkey] = description
-    end
-
-    for _, command in ipairs(mode) do
+    for _, command in ipairs(commands) do
       local hotkeys_string = table.concat(gtable.map(markup, command.pattern))
       -- when multiple commands with same keybindings exist, only respect first occurence
       if not keys[hotkeys_string] then
@@ -77,17 +70,16 @@ local function create_hotkeys(modes_table, stop_name, default_mode, modkey, form
     end
   end
 
+  for modename, _ in pairs(hotkeys) do
+    if modename ~= default_mode then
+      hotkeys[modename][1].keys[modkey] = string.format(format, default_mode)
+    end
+  end
+
   hotkeys_popup.add_hotkeys(hotkeys)
 end
 
 local function process_modes(modes_table, stop_name)
-  local mergemodes = gtable.find_keys(modes_table, function(k) return type(k) == "table" end)
-  for _, mergelist in pairs(mergemodes or {}) do
-    for _, modename in ipairs(mergelist) do
-      gtable.merge(modes_table[modename], modes_table[mergelist])
-    end
-  end
-
   for _, mode in pairs(modes_table) do
     for _, command in pairs(gtable.reverse(mode)) do
       command.start   = startmode
