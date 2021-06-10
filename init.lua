@@ -71,7 +71,7 @@ local function create_hotkeys(modes_table, stop_name, default_mode, modkey, form
   end
 
   for modename, _ in pairs(hotkeys) do
-    if modename ~= default_mode then
+    if modename ~= default_mode and not (modes_table[modename] and modes_table[modename].merge) then
       hotkeys[modename][1].keys[modkey] = string.format(format, default_mode)
     end
   end
@@ -80,8 +80,17 @@ local function create_hotkeys(modes_table, stop_name, default_mode, modkey, form
 end
 
 local function process_modes(modes_table, stop_name)
+  local normalmodes = gtable.find_keys(modes_table, function(_, mode) return not mode.merge end) or {}
   for _, mode in pairs(modes_table) do
-    for _, command in pairs(gtable.reverse(mode)) do
+    if mode.merge then
+      for _, modename in pairs(type(mode.merge) == "table" and mode.merge or normalmodes) do
+        gtable.merge(modes_table[modename], mode)
+      end
+    end
+  end
+
+  for _, mode in pairs(modes_table) do
+    for _, command in ipairs(gtable.reverse(mode)) do
       command.start   = startmode
       command.stop    = function() stopmode(stop_name) end
       command.grabber = grabber
