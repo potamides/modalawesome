@@ -99,27 +99,27 @@ A basic configuration with multiple modes could look like this:
 ```lua
 local modes = {
   mode1 = {
-  	{
+    {
       description = "start mode2",
       pattern = {'v'},
       handler = function(mode)
-      	mode.start("mode2")
+        mode.start("mode2")
       end
     }
   },
   mode2 = {
-  	{
+    {
       description = "start mode1",
       pattern = {'v'},
       handler = function(mode)
-      	mode.start("mode1")
+        mode.start("mode1")
       end
     },
     {
       description = "start insert mode",
       pattern = {'i'},
       handler = function(mode)
-      	mode.stop()
+        mode.stop()
       end
     }
   }
@@ -244,3 +244,26 @@ local pattern = {{"Control", "w"}, "[hjkl]"} -- matches "Control-w [hjkl]"
 ```lua
 local pattern = {{"Control", "Shift", "Tab"}} -- matches "Control-Shift-Tab"
 ```
+
+### Common Keybindings
+
+In some scenarios it might be desirable to add a lot of common keybindings to
+multiple modes (e.g. to make some commands accessible everywhere through a
+leader key). It might be tedious to add these bindings to all modes manually
+and it would also potentially clutter the hotkeys widget. For this use case
+modalawesome honors the `merge` key in mode tables:
+
+```lua
+local modes = {
+  tag      = { --[[ ... ]] },
+  launcher = { --[[ ... ]] },
+  layout   = { --[[ ... ]] },
+  common   = { merge=true, --[[ ... ]] }
+}
+```
+
+In this example all keybindings in **common** would be merged with the **tag**,
+**launcher** and **layout** modes, however the hotkeys widget would still show
+these bindings grouped under the **common** mode. For more fine-grained control
+over merging the value of the `merge` key could also be a table with mode
+names.
