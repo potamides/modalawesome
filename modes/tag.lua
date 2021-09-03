@@ -5,19 +5,20 @@ local gfind = require("gears.table").find_keys
 -- helper function used by some bindings which manipulate tags
 local function find_tag(func)
   return function(_, ...)
-    local screen, count, movement, index = awful.screen.focused(), select(-2, ...)
+    local screen, count, movement = awful.screen.focused(), select(-2, ...)
     local showntags = gfind(screen.tags, function(_, t) return not t.hide end, true)
+    local index = (screen.selected_tag or {}).index
     count = count == '' and 1 or tonumber(count)
 
     if movement == 'g' then
       index = count
-    elseif movement == 'f' then
-      index = ((screen.selected_tag.index - 1 + count) % #showntags) + 1
-    elseif movement == 'b' then
-      index = ((screen.selected_tag.index - 1 - count) % #showntags) + 1
+    elseif movement == 'f' and index then
+      index = ((index - 1 + count) % #showntags) + 1
+    elseif movement == 'b' and index then
+      index = ((index - 1 - count) % #showntags) + 1
     end
 
-    if screen.tags[showntags[index]] then
+    if index and screen.tags[showntags[index]] then
       func(screen.tags[showntags[index]])
     end
   end
