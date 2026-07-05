@@ -33,9 +33,7 @@ local layout_commands = {
         awful.tag.incnmaster(count, nil, true)
       else
         awful.tag.incnmaster(-count, nil, true)
-
       end
-
     end
   },
   {
