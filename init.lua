@@ -7,8 +7,22 @@ local execute = require("modalawesome.matcher").execute
 local hotkeys_popup = require("awful.hotkeys_popup.widget")
 local unpack = unpack or table.unpack -- luacheck: globals unpack (compatibility with Lua 5.1)
 
-local grabber, modes = {}
-local modalawesome = {sequence = textbox(), active_mode = textbox()}
+local grabber, modes
+local modalawesome = {
+  sequence = textbox(),
+  active_mode = textbox(),
+  -- ensure SomeWM compatibility where we can't use awesome._modifiers directly
+  modifiers = {
+    Mod3    = {"ISO_Level5_Shift"},
+    Control = {"Control_L", "Control_R"},
+    Lock    = {"Caps_Lock"},
+    Mod4    = {"Super_L", "Super_R"},
+    Shift   = {"Shift_L", "Shift_R"},
+    Mod5    = {"ISO_Level3_Shift"},
+    Mod1    = {"Alt_L"},
+    Mod2    = {"Num_Lock"},
+  }
+}
 
 local function grabkey(_, modifiers, key)
   local sequence = modalawesome.sequence.text .. key
@@ -31,11 +45,11 @@ end
 
 local function create_default_mode_keybindings(modkey, default_mode)
   -- need to find keynames for modifiers, e.g. Super_L and Super_R for Mod4
-  local keysyms = awesome._modifiers[modkey] or {{keysym = modkey}}
+  local keysyms = modalawesome.modifiers[modkey] or {modkey}
   local keybindings = {}
 
   for _, keysym in pairs(keysyms) do
-    table.insert(keybindings, {{}, keysym.keysym, function()
+    table.insert(keybindings, {{}, keysym, function()
       startmode(default_mode)
       modalawesome.sequence:set_text('')
     end})
