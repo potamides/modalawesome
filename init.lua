@@ -60,7 +60,9 @@ end
 
 local function markup(item)
   if type(item) == "string" then
-    return item
+    -- NOTE: Awesome versions >1.4.3 normalize single character strings in
+    -- hotkey window. We prepend a zero-width space here to prevent that.
+    return string.char(0xE2, 0x80, 0x8B) .. item
   end
 
   local color = beautiful.hotkeys_modifiers_fg or beautiful.bg_minimize or "#555555"
